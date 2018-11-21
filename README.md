@@ -4,9 +4,10 @@ You can use the [editor on GitHub](https://github.com/TomWilk257/NLFEA/edit/mast
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
-### Hello Tom
+# Work for GIP 2018/2019
+### Hello visitors
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+Welcome to the dumping ground, it's already getting a bit busy...
 
 ```markdown
 Syntax highlighted code block
