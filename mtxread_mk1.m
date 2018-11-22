@@ -1,5 +1,6 @@
-stiff=load('Job-1_STIF1.mtx');
-mass=load('Job-1_MASS2.mtx');
+function mtxread_mk1(modeforce)
+stiff=load('Frequency_STIF1.mtx');
+mass=load('Frequency_MASS1.mtx');
 num_nodes=3636;
 % Ms=sparse(mass(:,1),mass(:,2),mass(:,3));
 % Ks=sparse(stiff(:,1),stiff(:,2),stiff(:,3));
@@ -32,7 +33,7 @@ fr=sort(sqrt(diag(e12)));
 realfr=real(fr);
 %modal force to the first mode
 f=zeros(length(realfr),1);
-f(1)=10;
+f(1)=modeforce;
 realf=steve*f;
 fbigfinal=zeros(length(Ms1),1);
 %real forces
@@ -43,3 +44,6 @@ fbigfinal(w1)=realf;
 %steve2(w1,w1)=steve;
 %freal=inv(steve2')*fbig;
 fbigfinalfinal=reshape(fbigfinal,[3 length(fbigfinal)/3]).';
+q1=(fbigfinalfinal==0);
+fbigfinalfinal(q1)=1e-36;
+csvwrite('myFile2.csv',fbigfinalfinal);

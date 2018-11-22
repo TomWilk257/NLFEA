@@ -11,8 +11,8 @@ mtxread_mk1(i);
 dos('abaqus cae noGUI=Freq_Analysis_Copy.py');
 
 %Extract results from previous step
-dos('abaqus cae noGUI=readdispoutput.py')
-movefile('results1.csv',['Modeshape',num2str(i),'.csv'])
+dos('abaqus cae noGUI=readdispoutput.py');
+movefile('results1.csv',['Modeshape',num2str(i),'.csv']);
 i
 end
 toc
