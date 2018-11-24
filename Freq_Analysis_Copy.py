@@ -25,16 +25,16 @@ def FreqAnalysis():
     import csv
     ## profile for extrusion created
     s = mdb.models['Model-1'].ConstrainedSketch(name='__profile__', 
-    sheetSize=200.0)
+    sheetSize=2.0)
     g, v, d, c = s.geometry, s.vertices, s.dimensions, s.constraints
     s.setPrimaryObject(option=STANDALONE)
     ## rectangular profile
-    s.rectangle(point1=(15.0, 1.0), point2=(-15.0, -1.0))
+    s.rectangle(point1=(0.015, 0.001), point2=(-0.015, -0.001))
     ## Type of extrusion 
     p = mdb.models['Model-1'].Part(name='Beam', dimensionality=THREE_D, 
     type=DEFORMABLE_BODY)
     p = mdb.models['Model-1'].parts['Beam']
-    p.BaseSolidExtrude(sketch=s, depth=650.0) ## length of extrusion
+    p.BaseSolidExtrude(sketch=s, depth=0.65) ## length of extrusion
     s.unsetPrimaryObject()
     p = mdb.models['Model-1'].parts['Beam']
 ## changing the view
@@ -46,8 +46,8 @@ def FreqAnalysis():
         referenceRepresentation=OFF)
 ## material properties and name
     mdb.models['Model-1'].Material(name='Steel')
-    mdb.models['Model-1'].materials['Steel'].Density(table=((0.008, ), ))
-    mdb.models['Model-1'].materials['Steel'].Elastic(table=((210000.0, 0.3), ))
+    mdb.models['Model-1'].materials['Steel'].Density(table=((7850, ), ))
+    mdb.models['Model-1'].materials['Steel'].Elastic(table=((210000000000, 0.3), ))
     mdb.models['Model-1'].HomogeneousSolidSection(name='Section-1', 
         material='Steel', thickness=None)
     ## applying it to the model
@@ -77,18 +77,26 @@ def FreqAnalysis():
         predefinedFields=ON, connectors=ON, adaptiveMeshConstraints=OFF)
     a = mdb.models['Model-1'].rootAssembly
     f1 = a.instances['Beam-1'].faces
-    faces1 = f1.getSequenceFromMask(mask=('[#10 ]', ), )
-    region = a.Set(faces=faces1, name='Set-1')
+    fixed_ptx=0
+    fixed_pty=0
+    fixed_ptz=0
+    fixed_pt=(fixed_ptx,fixed_pty,fixed_ptz)
+    fixed_end_face = f1.findAt((fixed_pt,))
+    myRegion = regionToolset.Region(faces=fixed_end_face)
 ## Clamped boundary conditions
-    mdb.models['Model-1'].EncastreBC(name='Clamped', createStepName='Frequency', 
-        region=region, localCsys=None)
+##    mdb.models['Model-1'].EncastreBC(name='Clamped', createStepName='Frequency', 
+##        region=myRegion, localCsys=None)
     session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Initial')
     a = mdb.models['Model-1'].rootAssembly
     f1 = a.instances['Beam-1'].faces
-    faces1 = f1.getSequenceFromMask(mask=('[#10 ]', ), )
-    region = a.Set(faces=faces1, name='Set-2')
+    fixed_ptx=0
+    fixed_pty=0
+    fixed_ptz=0
+    fixed_pt=(fixed_ptx,fixed_pty,fixed_ptz)
+    fixed_end_face = f1.findAt((fixed_pt,))
+    myRegion = regionToolset.Region(faces=fixed_end_face)
     mdb.models['Model-1'].EncastreBC(name='Clamped-1', createStepName='Initial', 
-        region=region, localCsys=None)
+        region=myRegion, localCsys=None)
     session.viewports['Viewport: 1'].partDisplay.setValues(sectionAssignments=OFF, 
         engineeringFeatures=OFF, mesh=ON)
     session.viewports['Viewport: 1'].partDisplay.meshOptions.setValues(
@@ -98,7 +106,7 @@ def FreqAnalysis():
     session.viewports['Viewport: 1'].setValues(displayedObject=p1)
 ##Meshing
     p = mdb.models['Model-1'].parts['Beam']
-    p.seedPart(size=6.5, deviationFactor=0.1, minSizeFactor=0.1)
+    p.seedPart(size=0.0065, deviationFactor=0.0001, minSizeFactor=0.0001)
     p = mdb.models['Model-1'].parts['Beam']
     p.generateMesh()
 ##Viewport
@@ -118,7 +126,7 @@ def FreqAnalysis():
     mdb.models['Model-1'].StaticStep(name='Step-1', previous='Frequency')
     instanceNodes = mdb.models['Model-1'].rootAssembly.instances['Beam-1'].nodes
     #Import Forces
-    file=csv.reader(open('C:\\Users\\tw15036\\OneDrive - University of Bristol\\Documents\\Year 4\\GIP\\myFile2.csv','r'))
+    file=csv.reader(open('C:\\Users\\vm15717\\OneDrive - University of Bristol\\Documents\\Downloads\\myFile2.csv','r'))
     n=[]
     for row in file:
         n.append(row)

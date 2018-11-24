@@ -105,7 +105,7 @@ def FreqAnalysis():
     session.viewports['Viewport: 1'].setValues(displayedObject=p1)
 ##Meshing
     p = mdb.models['Model-1'].parts['Beam']
-    p.seedPart(size=0.001, deviationFactor=0.0001, minSizeFactor=0.0001)
+    p.seedPart(size=0.0065, deviationFactor=0.0001, minSizeFactor=0.0001)
     p = mdb.models['Model-1'].parts['Beam']
     p.generateMesh()
 ##Viewport
