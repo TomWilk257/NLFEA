@@ -1,4 +1,4 @@
-function [steve,diagKs]=mtxread_mk2
+function [steve2,diagKs,realfr]=mtxread_mk2
 stiff=load('Frequency_STIF1.mtx');
 mass=load('Frequency_MASS1.mtx');
 num_nodes=3636;
@@ -17,4 +17,7 @@ steve=zeros(num_nodes-length(diagKs));
 for i=1:num_nodes-length(diagKs)
     steve(:,i)=e11(:,i)./sqrt(diagN(i));
 end
+[fr,idx]=sort(sqrt(diag(e12)));
+realfr=real(fr);
+steve2=steve(:,idx);
 end

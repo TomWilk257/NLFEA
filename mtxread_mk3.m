@@ -1,7 +1,7 @@
-function mtxread_mk3(realfr,Ms1,diagKs,steve,modeforce)
+function mtxread_mk3(realfr,Ms1,diagKs,steve2,modeforce)
 f=zeros(length(realfr),1);
 f(1)=modeforce;
-realf=steve*f;
+realf=real(steve2'\f);
 fbigfinal=zeros(length(Ms1),1);
 %real forces
 %steve2=zeros(length(Ms1));

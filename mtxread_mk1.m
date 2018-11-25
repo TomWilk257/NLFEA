@@ -1,4 +1,4 @@
-function [steve,realfr,diagKs,Ms1]=mtxread_mk1
+function [steve2,realfr,diagKs,Ms1]=mtxread_mk1
 stiff=load('Frequency_STIF1.mtx');
 mass=load('Frequency_MASS1.mtx');
 num_nodes=3636;
@@ -29,8 +29,9 @@ end
 %Update Eigen Vectors
 Iden=round(steve'*Ms*steve,1);
 %Frequencies
-fr=sort(sqrt(diag(e12)));
+[fr,idx]=sort(sqrt(diag(e12)));
 realfr=real(fr);
+steve2=steve(:,idx);
 %modal force to the first mode
 % f=zeros(length(realfr),1);
 % f(1)=modeforce;
