@@ -35,15 +35,25 @@ def FreqAnalysis():
     p = mdb.models['Model-1'].parts['Beam']
     p.BaseSolidExtrude(sketch=s, depth=0.65) ## length of extrusion
     s.unsetPrimaryObject()
-    p = mdb.models['Model-1'].parts['Beam']
-## changing the view
-    session.viewports['Viewport: 1'].setValues(displayedObject=p)
-    del mdb.models['Model-1'].sketches['__profile__']
-    session.viewports['Viewport: 1'].partDisplay.setValues(sectionAssignments=ON, 
-        engineeringFeatures=ON)
-    session.viewports['Viewport: 1'].partDisplay.geometryOptions.setValues(
-        referenceRepresentation=OFF)
-## material properties and name
+    #End of sketching profile
+    #Or can be imported
+##    step = mdb.openStep(
+##        'C:/Users/tw15036/OneDrive - University of Bristol/Documents/Year 4/GIP/BeamGeom.stp', 
+##        scaleFromFile=OFF)
+##    mdb.models['Model-1'].PartFromGeometryFile(name='BeamGeom', geometryFile=step, 
+##        combine=False, mergeSolidRegions=True, dimensionality=THREE_D, 
+##        type=DEFORMABLE_BODY)
+##    mdb.models['Model-1'].parts.changeKey(fromName='BeamGeom', toName='Beam')
+##    #Then change part name to Beam
+##    p = mdb.models['Model-1'].parts['Beam']
+    ## changing the view
+##    session.viewports['Viewport: 1'].setValues(displayedObject=p)
+##    del mdb.models['Model-1'].sketches['__profile__']
+##    session.viewports['Viewport: 1'].partDisplay.setValues(sectionAssignments=ON, 
+##        engineeringFeatures=ON)
+##    session.viewports['Viewport: 1'].partDisplay.geometryOptions.setValues(
+##        referenceRepresentation=OFF)
+    ## material properties and name
     mdb.models['Model-1'].Material(name='Steel')
     mdb.models['Model-1'].materials['Steel'].Density(table=((7850, ), ))
     mdb.models['Model-1'].materials['Steel'].Elastic(table=((210000000000, 0.3), ))
@@ -74,14 +84,14 @@ def FreqAnalysis():
     session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Frequency')
     session.viewports['Viewport: 1'].assemblyDisplay.setValues(loads=ON, bcs=ON, 
         predefinedFields=ON, connectors=ON, adaptiveMeshConstraints=OFF)
-    a = mdb.models['Model-1'].rootAssembly
-    f1 = a.instances['Beam-1'].faces
-    fixed_ptx=0
-    fixed_pty=0
-    fixed_ptz=0
-    fixed_pt=(fixed_ptx,fixed_pty,fixed_ptz)
-    fixed_end_face = f1.findAt((fixed_pt,))
-    myRegion = regionToolset.Region(faces=fixed_end_face)
+##    a = mdb.models['Model-1'].rootAssembly
+##    f1 = a.instances['Beam-1'].faces
+##    fixed_ptx=0
+##    fixed_pty=0
+##    fixed_ptz=0
+##    fixed_pt=(fixed_ptx,fixed_pty,fixed_ptz)
+##    fixed_end_face = f1.findAt((fixed_pt,))
+##    myRegion = regionToolset.Region(faces=fixed_end_face)
 ## Clamped boundary conditions
 ##    mdb.models['Model-1'].EncastreBC(name='Clamped', createStepName='Frequency', 
 ##        region=myRegion, localCsys=None)
@@ -104,10 +114,22 @@ def FreqAnalysis():
     p1 = mdb.models['Model-1'].parts['Beam']
     session.viewports['Viewport: 1'].setValues(displayedObject=p1)
 ##Meshing
-    p = mdb.models['Model-1'].parts['Beam']
-    p.seedPart(size=0.0065, deviationFactor=0.0001, minSizeFactor=0.0001)
-    p = mdb.models['Model-1'].parts['Beam']
+    p=mdb.models['Model-1'].parts['Beam']
+    c=p.cells.findAt((0,0,0.325),)
+##    Region=regionToolset.Region(faces=p.faces[:])
+    pickedregions=(c,)
+    ElemType1=mesh.ElemType(elemCode=C3D20, secondOrderAccuracy=OFF)
+    p.setElementType(regions=pickedregions, elemTypes=(ElemType1,))
+##    ElemType2=mesh.ElemType(elemCode=B31H, secondOrderAccuracy=ON)
+##    region = a.instances['Beam-1'].edges
+##    a.Set(edges=region, name='Set-edges')
+##    edges = a.sets['Set-edges']
+##    p.setElementType(regions=edges, elemTypes=(ElemType2,))
+    p.setMeshControls(regions=pickedregions, elemShape=HEX)
+    p.seedPart(size=0.03, deviationFactor=0.01)
+##    p.seedEdgeByNumber(edges=, number=4)
     p.generateMesh()
+    p = mdb.models['Model-1'].parts['Beam']
 ##Viewport
     a = mdb.models['Model-1'].rootAssembly
     a.regenerate()
@@ -123,7 +145,7 @@ def FreqAnalysis():
         meshTechnique=OFF)
 ## Generate matrices
     mdb.models['Model-1'].keywordBlock.synchVersions(storeNodesAndElements=False)
-    mdb.models['Model-1'].keywordBlock.replace(24, """
+    mdb.models['Model-1'].keywordBlock.insert(24, """
     ** ----------------------------------------------------------------
     **
     * Step, name=exportmatrix
