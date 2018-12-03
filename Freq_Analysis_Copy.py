@@ -124,7 +124,7 @@ def FreqAnalysis():
         meshTechnique=OFF)
 ##Apply Loading
     mdb.models['Model-1'].StaticStep(name='Step-1', previous='Frequency')
-    mdb.models['Model-1'].steps['Step-1'].setValues(maxNumInc=50, initialInc=0.1, minInc=1e-06, 
+    mdb.models['Model-1'].steps['Step-1'].setValues(maxNumInc=100, initialInc=0.1, minInc=1e-06, 
         maxInc=1, nlgeom=ON)
     instanceNodes = mdb.models['Model-1'].rootAssembly.instances['Beam-1'].nodes
     #Import Forces
