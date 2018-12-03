@@ -12,7 +12,7 @@ import csv
 odbName='Frequency'
 odb=openOdb(odbName+'.odb',readOnly=True)
 step1=odb.steps['Step-1']
-frame=step1.frames[1]
+frame=step1.frames[-1]
 displ=frame.fieldOutputs['U']
 displvalues=displ.values
 dispres=np.zeros(shape=[len(displvalues),3])
