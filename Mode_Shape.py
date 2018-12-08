@@ -3,8 +3,8 @@
 from abaqus import *
 from abaqusConstants import *
 import __main__
-# Import relevant modules 
-def FreqAnalysis():
+
+def Mode_Shape():
     import section
     import regionToolset
     import displayGroupMdbToolset as dgm
@@ -22,6 +22,7 @@ def FreqAnalysis():
     import xyPlot
     import displayGroupOdbToolset as dgo
     import connectorBehavior
+    import csv
     import os
 # Import geometry as STEP file to create the part, change geometryFile property for other part types
     File = 'C:/Users/tw15036/OneDrive - University of Bristol/Documents/Year 4/GIP/BeamGeom.stp'
@@ -35,8 +36,8 @@ def FreqAnalysis():
     if filename!='Beam':
         mdb.models['Model-1'].parts.changeKey(fromName=filename, toName='Beam') # To fit with the pre-written variable names  
     p = mdb.models['Model-1'].parts['Beam']
-    ## material properties and name
-    mdb.models['Model-1'].Material(name='Steel') # Could build in prperty inputs
+## material properties and name
+    mdb.models['Model-1'].Material(name='Steel')
     mdb.models['Model-1'].materials['Steel'].Density(table=((7850, ), ))
     mdb.models['Model-1'].materials['Steel'].Elastic(table=((210000000000, 0.3), ))
     mdb.models['Model-1'].HomogeneousSolidSection(name='Section-1', 
@@ -59,12 +60,6 @@ def FreqAnalysis():
     a.Instance(name='Beam-1', part=p, dependent=ON)
     session.viewports['Viewport: 1'].assemblyDisplay.setValues(
         adaptiveMeshConstraints=ON)
-## create frequency analysis step
-    mdb.models['Model-1'].FrequencyStep(name='Frequency', previous='Initial', 
-        limitSavedEigenvectorRegion=None, numEigen=10) # numEigen = no of modes analysed
-    session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Frequency')
-    session.viewports['Viewport: 1'].assemblyDisplay.setValues(loads=ON, bcs=ON, 
-        predefinedFields=ON, connectors=ON, adaptiveMeshConstraints=OFF)
 ## Clamped boundary conditions
     session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Initial')
     a = mdb.models['Model-1'].rootAssembly
@@ -97,28 +92,33 @@ def FreqAnalysis():
 ##Viewport
     a = mdb.models['Model-1'].rootAssembly
     a.regenerate()
-## Generate matrices
-    mdb.models['Model-1'].keywordBlock.synchVersions(storeNodesAndElements=False)
-    mdb.models['Model-1'].keywordBlock.insert(24, """
-    ** ----------------------------------------------------------------
-    **
-    * Step, name=exportmatrix
-    *matrix generate, mass, stiffness
-    *matrix output, mass, stiffness, format=matrix input
-    *end step
-    **
-    **""")
-    ## Run job
-    mdb.Job(name='Frequency', model='Model-1', description='Frequency Analysis', 
+##Apply Loading
+    mdb.models['Model-1'].StaticStep(name='Step-1', previous='Initial', nlgeom=ON)
+    instanceNodes = mdb.models['Model-1'].rootAssembly.instances['Beam-1'].nodes
+    #Import Forces
+    file=csv.reader(open('C:\\Users\\tw15036\\OneDrive - University of Bristol\\Documents\\Year 4\\GIP\\Abaqus Output Files\\myFile2.csv','r'))
+    n=[]
+    for row in file:
+        n.append(row)
+    for i in range(0,len(n)):      
+        #nodeLabel = tuple(range(1,100))
+        nodeLabel=[i]
+        [cf11,cf22,cf33]=map(float,n[i])
+        meshNodeObj = instanceNodes.sequenceFromLabels(nodeLabel)
+        myRegion = regionToolset.Region(nodes=meshNodeObj)
+        mdb.models['Model-1'].ConcentratedForce(name='Load-'+str(i), createStepName='Step-1', 
+           region=myRegion, cf1=cf11, cf2=cf22, cf3=cf33, distributionType=UNIFORM, field='', 
+           localCsys=None)
+## Run job
+    mdb.Job(name='Mode_Shape', model='Model-1', description='Mode Shape', 
         type=ANALYSIS, atTime=None, waitMinutes=0, waitHours=0, queue=None, 
         memory=90, memoryUnits=PERCENTAGE, getMemoryFromAnalysis=True, 
         explicitPrecision=SINGLE, nodalOutputPrecision=SINGLE, echoPrint=OFF, 
         modelPrint=OFF, contactPrint=OFF, historyPrint=OFF, userSubroutine='', 
         scratch='', resultsFormat=ODB, multiprocessingMode=DEFAULT, numCpus=1, 
         numGPUs=0)
-    mdb.jobs['Frequency'].submit(consistencyChecking=OFF)
-    session.mdbData.summary()
-FreqAnalysis()
+    mdb.jobs['Mode_Shape'].submit(consistencyChecking=OFF)
+Mode_Shape()
 
 def Saving():
     import section
@@ -142,6 +142,22 @@ def Saving():
     mdb.saveAs(pathName='C:/temp/ExperimentalBeamFreq')
 Saving()
 
-
+##    o3 = session.openOdb(name='C:/temp/Frequency.odb')
+##    session.viewports['Viewport: 1'].setValues(displayedObject=o3)
+##    session.viewports['Viewport: 1'].odbDisplay.setFrame(step=0, frame=3)
+##    session.viewports['Viewport: 1'].odbDisplay.setFrame(step=0, frame=3)
+##    session.animationController.setValues(animationType=HARMONIC, viewports=(
+##        'Viewport: 1', ))
+##    session.animationController.play(duration=UNLIMITED)
+##    session.animationController.setValues(animationType=TIME_HISTORY)
+##    session.animationController.play(duration=UNLIMITED)
+##    session.animationController.setValues(animationType=SCALE_FACTOR)
+##    session.animationController.play(duration=UNLIMITED)
+##    session.animationController.setValues(animationType=HARMONIC)
+##    session.animationController.play(duration=UNLIMITED)
+##    session.viewports['Viewport: 1'].odbDisplay.setFrame(step=0, frame=3)
+##    session.viewports['Viewport: 1'].odbDisplay.setFrame(step=0, frame=3)
+##    session.viewports['Viewport: 1'].odbDisplay.display.setValues(plotState=(
+##        CONTOURS_ON_DEF, ))
 
 
