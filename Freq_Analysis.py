@@ -23,36 +23,29 @@ def FreqAnalysis():
     import displayGroupOdbToolset as dgo
     import connectorBehavior
     ## profile for extrusion created
-    s = mdb.models['Model-1'].ConstrainedSketch(name='__profile__', 
-    sheetSize=2.0)
-    g, v, d, c = s.geometry, s.vertices, s.dimensions, s.constraints
-    s.setPrimaryObject(option=STANDALONE)
-    ## rectangular profile
-    s.rectangle(point1=(0.015, 0.001), point2=(-0.015, -0.001))
-    ## Type of extrusion 
-    p = mdb.models['Model-1'].Part(name='Beam', dimensionality=THREE_D, 
-    type=DEFORMABLE_BODY)
-    p = mdb.models['Model-1'].parts['Beam']
-    p.BaseSolidExtrude(sketch=s, depth=0.65) ## length of extrusion
-    s.unsetPrimaryObject()
+##    s = mdb.models['Model-1'].ConstrainedSketch(name='__profile__', 
+##    sheetSize=2.0)
+##    g, v, d, c = s.geometry, s.vertices, s.dimensions, s.constraints
+##    s.setPrimaryObject(option=STANDALONE)
+##    ## rectangular profile
+##    s.rectangle(point1=(0.015, 0.001), point2=(-0.015, -0.001))
+##    ## Type of extrusion 
+##    p = mdb.models['Model-1'].Part(name='Beam', dimensionality=THREE_D, 
+##    type=DEFORMABLE_BODY)
+##    p = mdb.models['Model-1'].parts['Beam']
+##    p.BaseSolidExtrude(sketch=s, depth=0.65) ## length of extrusion
+##    s.unsetPrimaryObject()
     #End of sketching profile
     #Or can be imported
-##    step = mdb.openStep(
-##        'C:/Users/tw15036/OneDrive - University of Bristol/Documents/Year 4/GIP/BeamGeom.stp', 
-##        scaleFromFile=OFF)
-##    mdb.models['Model-1'].PartFromGeometryFile(name='BeamGeom', geometryFile=step, 
-##        combine=False, mergeSolidRegions=True, dimensionality=THREE_D, 
-##        type=DEFORMABLE_BODY)
-##    mdb.models['Model-1'].parts.changeKey(fromName='BeamGeom', toName='Beam')
-##    #Then change part name to Beam
-##    p = mdb.models['Model-1'].parts['Beam']
-    ## changing the view
-##    session.viewports['Viewport: 1'].setValues(displayedObject=p)
-##    del mdb.models['Model-1'].sketches['__profile__']
-##    session.viewports['Viewport: 1'].partDisplay.setValues(sectionAssignments=ON, 
-##        engineeringFeatures=ON)
-##    session.viewports['Viewport: 1'].partDisplay.geometryOptions.setValues(
-##        referenceRepresentation=OFF)
+    step = mdb.openStep(
+        'C:/Users/tw15036/OneDrive - University of Bristol/Documents/Year 4/GIP/BeamGeom.stp', 
+        scaleFromFile=OFF)
+    mdb.models['Model-1'].PartFromGeometryFile(name='BeamGeom', geometryFile=step, 
+        combine=False, mergeSolidRegions=True, dimensionality=THREE_D, 
+        type=DEFORMABLE_BODY, scale=0.001)
+    #Then change part name to Beam
+    mdb.models['Model-1'].parts.changeKey(fromName='BeamGeom', toName='Beam')    
+    p = mdb.models['Model-1'].parts['Beam']
     ## material properties and name
     mdb.models['Model-1'].Material(name='Steel')
     mdb.models['Model-1'].materials['Steel'].Density(table=((7850, ), ))
@@ -126,7 +119,7 @@ def FreqAnalysis():
 ##    edges = a.sets['Set-edges']
 ##    p.setElementType(regions=edges, elemTypes=(ElemType2,))
     p.setMeshControls(regions=pickedregions, elemShape=HEX)
-    p.seedPart(size=0.03, deviationFactor=0.01)
+    p.seedPart(size=0.010, deviationFactor=0.01)
 ##    p.seedEdgeByNumber(edges=, number=4)
     p.generateMesh()
     p = mdb.models['Model-1'].parts['Beam']
@@ -150,7 +143,7 @@ def FreqAnalysis():
     **
     * Step, name=exportmatrix
     *matrix generate, mass, stiffness
-    *matrix output, mass, stiffness, format=coordinate
+    *matrix output, mass, stiffness, format=matrix input
     *end step
     **
     **""")
