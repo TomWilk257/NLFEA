@@ -100,7 +100,7 @@ def FreqAnalysis():
     session.viewports['Viewport: 1'].assemblyDisplay.meshOptions.setValues(
         meshTechnique=OFF)
 ##Apply Loading
-    mdb.models['Model-1'].StaticStep(name='Step-1', previous='Initial')
+    mdb.models['Model-1'].StaticStep(name='Step-1', previous='Initial', nlgeom=ON)
     instanceNodes = mdb.models['Model-1'].rootAssembly.instances['Beam-1'].nodes
     #Import Forces
     file=csv.reader(open('C:\\Users\\tw15036\\OneDrive - University of Bristol\\Documents\\Year 4\\GIP\\Abaqus Output Files\\myFile2.csv','r'))
