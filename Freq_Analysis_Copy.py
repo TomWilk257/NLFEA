@@ -23,27 +23,16 @@ def FreqAnalysis():
     import displayGroupOdbToolset as dgo
     import connectorBehavior
     import csv
-    ## profile for extrusion created
-    s = mdb.models['Model-1'].ConstrainedSketch(name='__profile__', 
-    sheetSize=2.0)
-    g, v, d, c = s.geometry, s.vertices, s.dimensions, s.constraints
-    s.setPrimaryObject(option=STANDALONE)
-    ## rectangular profile
-    s.rectangle(point1=(0.015, 0.001), point2=(-0.015, -0.001))
-    ## Type of extrusion 
-    p = mdb.models['Model-1'].Part(name='Beam', dimensionality=THREE_D, 
-    type=DEFORMABLE_BODY)
+ #Or can be imported
+    step = mdb.openStep(
+        'C:/Users/tw15036/OneDrive - University of Bristol/Documents/Year 4/GIP/BeamGeom.stp', 
+        scaleFromFile=OFF)
+    mdb.models['Model-1'].PartFromGeometryFile(name='BeamGeom', geometryFile=step, 
+        combine=False, mergeSolidRegions=True, dimensionality=THREE_D, 
+        type=DEFORMABLE_BODY, scale=0.001)
+    #Then change part name to Beam
+    mdb.models['Model-1'].parts.changeKey(fromName='BeamGeom', toName='Beam')    
     p = mdb.models['Model-1'].parts['Beam']
-    p.BaseSolidExtrude(sketch=s, depth=0.65) ## length of extrusion
-    s.unsetPrimaryObject()
-    p = mdb.models['Model-1'].parts['Beam']
-## changing the view
-    session.viewports['Viewport: 1'].setValues(displayedObject=p)
-    del mdb.models['Model-1'].sketches['__profile__']
-    session.viewports['Viewport: 1'].partDisplay.setValues(sectionAssignments=ON, 
-        engineeringFeatures=ON)
-    session.viewports['Viewport: 1'].partDisplay.geometryOptions.setValues(
-        referenceRepresentation=OFF)
 ## material properties and name
     mdb.models['Model-1'].Material(name='Steel')
     mdb.models['Model-1'].materials['Steel'].Density(table=((7850, ), ))
@@ -53,8 +42,7 @@ def FreqAnalysis():
     ## applying it to the model
     p = mdb.models['Model-1'].parts['Beam']
     c = p.cells
-    cells = c.getSequenceFromMask(mask=('[#1 ]', ), )
-    region = p.Set(cells=cells, name='Set-1')
+    region = (c,)
     p = mdb.models['Model-1'].parts['Beam']
     p.SectionAssignment(region=region, sectionName='Section-1', offset=0.0, 
         offsetType=MIDDLE_SURFACE, offsetField='', 
@@ -69,23 +57,7 @@ def FreqAnalysis():
     a.Instance(name='Beam-1', part=p, dependent=ON)
     session.viewports['Viewport: 1'].assemblyDisplay.setValues(
         adaptiveMeshConstraints=ON)
-## create frequency analysis step
-    mdb.models['Model-1'].FrequencyStep(name='Frequency', previous='Initial', 
-        limitSavedEigenvectorRegion=None, numEigen=10) # numEigen = no of modes analysed
-    session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Frequency')
-    session.viewports['Viewport: 1'].assemblyDisplay.setValues(loads=ON, bcs=ON, 
-        predefinedFields=ON, connectors=ON, adaptiveMeshConstraints=OFF)
-    a = mdb.models['Model-1'].rootAssembly
-    f1 = a.instances['Beam-1'].faces
-    fixed_ptx=0
-    fixed_pty=0
-    fixed_ptz=0
-    fixed_pt=(fixed_ptx,fixed_pty,fixed_ptz)
-    fixed_end_face = f1.findAt((fixed_pt,))
-    myRegion = regionToolset.Region(faces=fixed_end_face)
 ## Clamped boundary conditions
-##    mdb.models['Model-1'].EncastreBC(name='Clamped', createStepName='Frequency', 
-##        region=myRegion, localCsys=None)
     session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Initial')
     a = mdb.models['Model-1'].rootAssembly
     f1 = a.instances['Beam-1'].faces
@@ -105,10 +77,15 @@ def FreqAnalysis():
     p1 = mdb.models['Model-1'].parts['Beam']
     session.viewports['Viewport: 1'].setValues(displayedObject=p1)
 ##Meshing
-    p = mdb.models['Model-1'].parts['Beam']
-    p.seedPart(size=0.0065, deviationFactor=0.0001, minSizeFactor=0.0001)
-    p = mdb.models['Model-1'].parts['Beam']
+    p=mdb.models['Model-1'].parts['Beam']
+    c=p.cells.findAt((0,0,0.325),)
+    pickedregions=(c,)
+    ElemType1=mesh.ElemType(elemCode=C3D20, secondOrderAccuracy=OFF)
+    p.setElementType(regions=pickedregions, elemTypes=(ElemType1,))
+    p.setMeshControls(regions=pickedregions, elemShape=HEX)
+    p.seedPart(size=0.010, deviationFactor=0.01)
     p.generateMesh()
+    p = mdb.models['Model-1'].parts['Beam']
 ##Viewport
     a = mdb.models['Model-1'].rootAssembly
     a.regenerate()
@@ -123,12 +100,10 @@ def FreqAnalysis():
     session.viewports['Viewport: 1'].assemblyDisplay.meshOptions.setValues(
         meshTechnique=OFF)
 ##Apply Loading
-    mdb.models['Model-1'].StaticStep(name='Step-1', previous='Frequency')
-    mdb.models['Model-1'].steps['Step-1'].setValues(maxNumInc=100, initialInc=0.1, minInc=1e-06, 
-        maxInc=1, nlgeom=ON)
+    mdb.models['Model-1'].StaticStep(name='Step-1', previous='Initial')
     instanceNodes = mdb.models['Model-1'].rootAssembly.instances['Beam-1'].nodes
     #Import Forces
-    file=csv.reader(open('C:\\Users\\vm15717\\OneDrive - University of Bristol\\Documents\\Downloads\\myFile2.csv','r'))
+    file=csv.reader(open('C:\\Users\\tw15036\\OneDrive - University of Bristol\\Documents\\Year 4\\GIP\\Abaqus Output Files\\myFile2.csv','r'))
     n=[]
     for row in file:
         n.append(row)
@@ -154,24 +129,15 @@ def FreqAnalysis():
     session.viewports['Viewport: 1'].assemblyDisplay.setValues(mesh=OFF)
     session.viewports['Viewport: 1'].assemblyDisplay.meshOptions.setValues(
         meshTechnique=OFF)
-## Generate matrices
-##    mdb.models['Model-1'].keywordBlock.synchVersions(storeNodesAndElements=False)
-##    mdb.models['Model-1'].keywordBlock.insert(26, """
-##    ** ----------------------------------------------------------------
-##    *Step, name=exportmatrix
-##    *matrix generate, mass, stiffness
-##    *matrix output, mass, stiffness, format=MATRIX INPUT
-##    *end step
-##    **""")
     ## Run job
-    mdb.Job(name='Frequency', model='Model-1', description='Frequency Analysis', 
+    mdb.Job(name='Mode_Shape', model='Model-1', description='Mode Shape', 
         type=ANALYSIS, atTime=None, waitMinutes=0, waitHours=0, queue=None, 
         memory=90, memoryUnits=PERCENTAGE, getMemoryFromAnalysis=True, 
         explicitPrecision=SINGLE, nodalOutputPrecision=SINGLE, echoPrint=OFF, 
         modelPrint=OFF, contactPrint=OFF, historyPrint=OFF, userSubroutine='', 
         scratch='', resultsFormat=ODB, multiprocessingMode=DEFAULT, numCpus=1, 
         numGPUs=0)
-    mdb.jobs['Frequency'].submit(consistencyChecking=OFF)
+    mdb.jobs['Mode_Shape'].submit(consistencyChecking=OFF)
     session.mdbData.summary()
 FreqAnalysis()
 
