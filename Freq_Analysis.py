@@ -104,7 +104,7 @@ def FreqAnalysis():
     **
     * Step, name=exportmatrix
     *matrix generate, mass, stiffness
-    *matrix output, mass, stiffness, format=matrix input
+    *matrix output, mass, stiffness, format=coordinate
     *end step
     **
     **""")

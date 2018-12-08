@@ -1,4 +1,4 @@
-function [Phi,Lam,Midx,diagKs]=Get_Modal_v2
+function [Phi,Lam,N,diagKs]=Get_Modal_v2
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 tic
